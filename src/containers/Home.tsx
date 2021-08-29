@@ -3,13 +3,14 @@ import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
 import { BsPencilSquare } from "react-icons/bs";
 import ListGroup from "react-bootstrap/ListGroup";
+// @ts-ignore  - there are no types for this library at the moment.
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppContext } from "../libs/contextLib";
 import { onError } from "../libs/errorLib";
 import "./Home.css";
 
 export default function Home() {
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState<Array<UxNote>>([]);
   const { isAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,8 +21,11 @@ export default function Home() {
       }
 
       try {
-        const notes = await loadNotes();
-        setNotes(notes);
+        const notesFromApi: Array<ApiNote> = await loadNotes();
+        setNotes(notesFromApi.map((n) => {
+            (n as UxNote)._visible = true;
+            return n as UxNote;
+        }));
       } catch (e) {
         onError(e);
       }
@@ -33,10 +37,10 @@ export default function Home() {
   }, [isAuthenticated]);
 
   function loadNotes() {
-    return API.get("notes", "/notes");
+    return API.get("notes", "/notes", null);
   }
 
-  function renderNotesList(notes) {
+  function renderNotesList(notes: UxNote[]) {
     return (
       <>
         <LinkContainer to="/notes/new">
@@ -45,7 +49,7 @@ export default function Home() {
             <span className="ml-2 font-weight-bold">Create a new note</span>
           </ListGroup.Item>
         </LinkContainer>
-        {notes.map(({ noteId, content, createdAt }) => (
+        {notes.filter(({_visible}: UxNote) => _visible).map(({ noteId, content, createdAt }: UxNote) => (
           <LinkContainer key={noteId} to={`/notes/${noteId}`}>
             <ListGroup.Item action>
               <span className="font-weight-bold">
