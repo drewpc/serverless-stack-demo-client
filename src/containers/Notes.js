@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 import { Storage } from "aws-amplify";
 import { useParams, useHistory } from "react-router-dom";
 import LoaderButton from "../components/LoaderButton";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { onError } from "../libs/errorLib";
 import { s3Upload } from "../libs/awsLib";
 import { deleteNote, loadNote, saveNote } from "../libs/apiLib";
@@ -15,6 +16,7 @@ export default function Notes() {
   const history = useHistory();
   const [note, setNote] = useState(null);
   const [content, setContent] = useState("");
+  const [isLoadingForViewing, setIsLoadingForViewing] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -33,6 +35,7 @@ export default function Notes() {
       } catch (e) {
         onError(e);
       }
+      setIsLoadingForViewing(false);
     }
 
     onLoad();
@@ -106,7 +109,7 @@ export default function Notes() {
 
   return (
     <div className="Notes">
-      {note && (
+      {isLoadingForViewing ? <LoadingIndicator /> : note && (
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="content">
             <Form.Control
