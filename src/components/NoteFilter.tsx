@@ -13,6 +13,7 @@ export default function NoteFilter(props: {
             // TODO: sanitize this string to make it safe.
             props.filterFunction(filter);
         }, 500);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter, props.filterFunction]);
 
     return (
