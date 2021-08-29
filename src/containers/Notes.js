@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import Form from "react-bootstrap/Form";
-import { API, Storage } from "aws-amplify";
+import { Storage } from "aws-amplify";
 import { useParams, useHistory } from "react-router-dom";
 import LoaderButton from "../components/LoaderButton";
 import { onError } from "../libs/errorLib";
 import { s3Upload } from "../libs/awsLib";
+import { deleteNote, loadNote, saveNote } from "../libs/apiLib";
 import config from "../config";
 import "./Notes.css";
 
@@ -18,13 +19,9 @@ export default function Notes() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    function loadNote() {
-      return API.get("notes", `/notes/${id}`);
-    }
-
     async function onLoad() {
       try {
-        const note = await loadNote();
+        const note = await loadNote(id);
         const { content, attachment } = note;
 
         if (attachment) {
@@ -51,12 +48,6 @@ export default function Notes() {
 
   function handleFileChange(event) {
     file.current = event.target.files[0];
-  }
-
-  function saveNote(note) {
-    return API.put("notes", `/notes/${id}`, {
-      body: note
-    });
   }
 
   async function handleSubmit(event) {
@@ -91,10 +82,6 @@ export default function Notes() {
     }
   }
 
-  function deleteNote() {
-    return API.del("notes", `/notes/${id}`);
-  }
-
   async function handleDelete(event) {
     event.preventDefault();
 
@@ -109,7 +96,7 @@ export default function Notes() {
     setIsDeleting(true);
 
     try {
-      await deleteNote();
+      await deleteNote(id);
       history.push("/");
     } catch (e) {
       onError(e);
