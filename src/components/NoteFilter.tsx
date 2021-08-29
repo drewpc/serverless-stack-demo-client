@@ -1,7 +1,10 @@
 import React, {useEffect, useRef, useState} from "react";
 import Form from "react-bootstrap/Form";
 
+import NoteFilterReplace from "./NoteFilterReplace";
+
 export default function NoteFilter(props: {
+    bulkReplaceFunction: (filter: string, value: string) => void,
     filterFunction: (value: string) => void,
 }): JSX.Element {
     const [filter, setFilter] = useState("");
@@ -27,6 +30,7 @@ export default function NoteFilter(props: {
                     onChange={(e) => setFilter(e.target.value)}
                 />
             </Form.Group>
+            {filter && <NoteFilterReplace bulkReplaceFunction={props.bulkReplaceFunction} filter={filter} />}
         </div>
     )
 }
