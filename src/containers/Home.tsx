@@ -7,6 +7,7 @@ import { LinkContainer } from "react-router-bootstrap";
 import { useAppContext } from "../libs/contextLib";
 import { onError } from "../libs/errorLib";
 import { loadNotes, saveNote } from "../libs/apiLib";
+import LoadingIndicator from "../components/LoadingIndicator";
 import NoteFilter from "../components/NoteFilter";
 import "./Home.css";
 
@@ -118,7 +119,7 @@ export default function Home() {
     return (
       <div className="notes">
         <h2 className="pb-3 mt-4 mb-3 border-bottom">Your Notes</h2>
-        <ListGroup>{!isLoading && renderNotesList()}</ListGroup>
+        <ListGroup>{isLoading ? <LoadingIndicator /> : renderNotesList()}</ListGroup>
       </div>
     );
   }
