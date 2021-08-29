@@ -7,6 +7,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppContext } from "../libs/contextLib";
 import { onError } from "../libs/errorLib";
+import NoteFilter from "../components/NoteFilter";
 import "./Home.css";
 
 export default function Home() {
@@ -40,9 +41,27 @@ export default function Home() {
     return API.get("notes", "/notes", null);
   }
 
-  function renderNotesList(notes: UxNote[]) {
+  function escapeRegExp(str: string): string {
+    // https://stackoverflow.com/a/6969486
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+
+  const filterNotes = (value: string): void => {
+      const valueComparison = new RegExp(escapeRegExp(value), "im");
+      setNotes(
+          notes.map((n) => {
+              n._visible = valueComparison.test(n.content);
+              return n;
+          })
+      );
+  }
+
+    function renderNotesList(notes: UxNote[]) {
     return (
       <>
+        <ListGroup.Item action>
+          <NoteFilter filterFunction={filterNotes} />
+        </ListGroup.Item>
         <LinkContainer to="/notes/new">
           <ListGroup.Item action className="py-3 text-nowrap text-truncate">
             <BsPencilSquare size={17} />
