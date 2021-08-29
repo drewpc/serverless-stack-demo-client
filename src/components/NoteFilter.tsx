@@ -22,9 +22,11 @@ export default function NoteFilter(props: {
         <div className="NoteFilter">
             <Form>
                 <Form.Group controlId="filter">
+                    <Form.Label>Filter notes by: </Form.Label>
                     <Form.Control
                         value={filter}
-                        as="input"
+                        type="text"
+                        placeholder="Enter text to filter notes"
                         onChange={doFilter}
                     />
                 </Form.Group>
