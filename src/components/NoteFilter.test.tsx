@@ -18,7 +18,7 @@ test('keyboard input is debounced', () => {
   const sampleText = 'filterstring';
   userEvent.type(formInput, sampleText)
 
-  expect(clearTimeout).toHaveBeenCalledTimes(sampleText.length + 1);
+  expect(clearTimeout).toHaveBeenCalledTimes(sampleText.length);
   expect(setTimeout).toHaveBeenCalledTimes(sampleText.length + 2);
 
   jest.advanceTimersByTime(500);

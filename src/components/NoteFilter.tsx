@@ -8,12 +8,12 @@ export default function NoteFilter(props: {
     const filterTimeout = useRef<ReturnType<typeof setTimeout>>();
 
     useEffect(() => {
-        clearTimeout(filterTimeout.current as ReturnType<typeof setTimeout>);
         filterTimeout.current = setTimeout(() => {
             // TODO: sanitize this string to make it safe.
             props.filterFunction(filter);
         }, 500);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => clearTimeout(filterTimeout.current as ReturnType<typeof setTimeout>);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter, props.filterFunction]);
 
     return (
