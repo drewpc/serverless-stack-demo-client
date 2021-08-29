@@ -3,13 +3,15 @@ import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
 import { BsPencilSquare } from "react-icons/bs";
 import ListGroup from "react-bootstrap/ListGroup";
+// @ts-ignore  - there are no types for this library at the moment.
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppContext } from "../libs/contextLib";
 import { onError } from "../libs/errorLib";
+import NoteFilter from "../components/NoteFilter";
 import "./Home.css";
 
 export default function Home() {
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState<Array<UxNote>>([]);
   const { isAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,8 +22,11 @@ export default function Home() {
       }
 
       try {
-        const notes = await loadNotes();
-        setNotes(notes);
+        const notesFromApi: Array<ApiNote> = await loadNotes();
+        setNotes(notesFromApi.map((n) => {
+            (n as UxNote)._visible = true;
+            return n as UxNote;
+        }));
       } catch (e) {
         onError(e);
       }
@@ -33,19 +38,37 @@ export default function Home() {
   }, [isAuthenticated]);
 
   function loadNotes() {
-    return API.get("notes", "/notes");
+    return API.get("notes", "/notes", null);
   }
 
-  function renderNotesList(notes) {
+  function escapeRegExp(str: string): string {
+    // https://stackoverflow.com/a/6969486
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+
+  const filterNotes = (value: string): void => {
+      const valueComparison = new RegExp(escapeRegExp(value), "im");
+      setNotes(
+          notes.map((n) => {
+              n._visible = valueComparison.test(n.content);
+              return n;
+          })
+      );
+  }
+
+    function renderNotesList(notes: UxNote[]) {
     return (
       <>
+        <ListGroup.Item action>
+          <NoteFilter filterFunction={filterNotes} />
+        </ListGroup.Item>
         <LinkContainer to="/notes/new">
           <ListGroup.Item action className="py-3 text-nowrap text-truncate">
             <BsPencilSquare size={17} />
             <span className="ml-2 font-weight-bold">Create a new note</span>
           </ListGroup.Item>
         </LinkContainer>
-        {notes.map(({ noteId, content, createdAt }) => (
+        {notes.filter(({_visible}: UxNote) => _visible).map(({ noteId, content, createdAt }: UxNote) => (
           <LinkContainer key={noteId} to={`/notes/${noteId}`}>
             <ListGroup.Item action>
               <span className="font-weight-bold">
