@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
 import { BsPencilSquare } from "react-icons/bs";
 import ListGroup from "react-bootstrap/ListGroup";
@@ -7,6 +6,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppContext } from "../libs/contextLib";
 import { onError } from "../libs/errorLib";
+import { loadNotes, saveNote } from "../libs/apiLib";
 import NoteFilter from "../components/NoteFilter";
 import "./Home.css";
 
@@ -14,6 +14,7 @@ export default function Home() {
   const [notes, setNotes] = useState<Array<UxNote>>([]);
   const { isAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(true);
+  const visibleNotes = notes.filter(({_visible}: UxNote) => _visible);
 
   useEffect(() => {
     async function onLoad() {
@@ -37,10 +38,6 @@ export default function Home() {
     onLoad();
   }, [isAuthenticated]);
 
-  function loadNotes() {
-    return API.get("notes", "/notes", null);
-  }
-
   function escapeRegExp(str: string): string {
     // https://stackoverflow.com/a/6969486
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
@@ -56,19 +53,34 @@ export default function Home() {
       );
   }
 
-    function renderNotesList(notes: UxNote[]) {
+  const bulkStringReplacement = async (filterStr: string, replaceValue: string) => {
+      const valueComparison = new RegExp(escapeRegExp(filterStr), "img");
+
+      setIsLoading(true);
+      try {
+          for (let i = 0; i < visibleNotes.length; i++) {
+              let n = visibleNotes[i];
+              n.content = n.content.replaceAll(valueComparison, replaceValue);
+              await saveNote(n);
+          }
+      } catch (e) {
+          onError(e);
+      } finally {
+          setIsLoading(false);
+      }
+  }
+
+    function renderNotesList() {
     return (
       <>
-        <ListGroup.Item action>
-          <NoteFilter filterFunction={filterNotes} />
-        </ListGroup.Item>
+        <NoteFilter filterFunction={filterNotes} bulkReplaceFunction={bulkStringReplacement}/>
         <LinkContainer to="/notes/new">
           <ListGroup.Item action className="py-3 text-nowrap text-truncate">
             <BsPencilSquare size={17} />
             <span className="ml-2 font-weight-bold">Create a new note</span>
           </ListGroup.Item>
         </LinkContainer>
-        {notes.filter(({_visible}: UxNote) => _visible).map(({ noteId, content, createdAt }: UxNote) => (
+        {visibleNotes.map(({ noteId, content, createdAt }: UxNote) => (
           <LinkContainer key={noteId} to={`/notes/${noteId}`}>
             <ListGroup.Item action>
               <span className="font-weight-bold">
@@ -106,7 +118,7 @@ export default function Home() {
     return (
       <div className="notes">
         <h2 className="pb-3 mt-4 mb-3 border-bottom">Your Notes</h2>
-        <ListGroup>{!isLoading && renderNotesList(notes)}</ListGroup>
+        <ListGroup>{!isLoading && renderNotesList()}</ListGroup>
       </div>
     );
   }
