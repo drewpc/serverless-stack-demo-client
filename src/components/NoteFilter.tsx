@@ -18,17 +18,15 @@ export default function NoteFilter(props: {
 
     return (
         <div className="NoteFilter">
-            <Form>
-                <Form.Group controlId="note-filter">
-                    <Form.Label>Filter notes by: </Form.Label>
-                    <Form.Control
-                        value={filter}
-                        type="text"
-                        placeholder="Enter text to filter notes"
-                        onChange={(e) => setFilter(e.target.value)}
-                    />
-                </Form.Group>
-            </Form>
+            <Form.Group controlId="note-filter">
+                <Form.Label>Filter notes by: </Form.Label>
+                <Form.Control
+                    value={filter}
+                    type="text"
+                    placeholder="Enter text to filter notes"
+                    onChange={(e) => setFilter(e.target.value)}
+                />
+            </Form.Group>
         </div>
     )
 }
